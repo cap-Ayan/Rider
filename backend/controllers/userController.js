@@ -35,3 +35,50 @@ exports.register = async (req, res) => {
         res.status(500).json({success:false, error: 'Internal server error' });
     }
 };
+
+exports.login = async (req, res) => {
+    try {
+
+          const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { email, password } = req.body;
+
+        const user = await userModel.findOne({ email }).select('+password');
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+        res.cookie('token', token, { httpOnly: true });
+
+        res.status(200).json({ success: true, message: 'User logged in successfully', user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+exports.logout = (req, res) => {
+    res.clearCookie('token');
+    res.status(200).json({ success: true, message: 'User logged out successfully' });
+}
