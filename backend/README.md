@@ -204,3 +204,40 @@ Example:
 
 - 200 OK
 Description: Authenticated — returns the user object loaded by the middleware.
+
+## GET /api/users/logout
+
+Description
+- Log out the authenticated user by clearing the HTTP-only `token` cookie set by login/register.
+
+Required headers / cookies
+- Cookie: `token=<JWT>` (optional — if present it will be cleared)
+- When testing with curl, send the cookie header: `-H "Cookie: token=<JWT>"` or use `-b cookies.txt`
+
+Example request (curl)
+```bash
+curl -X GET http://localhost:3000/api/users/logout \
+  -H "Cookie: token=<JWT>"
+
+# or after login using a cookie jar
+curl -b cookies.txt -X GET http://localhost:3000/api/users/logout
+```
+
+Responses
+
+- 200 OK  
+  Description: Logout successful — server clears the `token` cookie.
+  Example:
+  ```json
+  { "success": true, "message": "User logged out successfully" }
+  ```
+
+- 500 Internal Server Error  
+  Description: Unexpected server error while clearing cookie.
+  Example:
+  ```json
+  { "success": false, "error": "Internal server error" }
+  ```
+
+Notes
+- The endpoint clears only the HTTP-only cookie on the server; remove any client-side auth state as needed.
