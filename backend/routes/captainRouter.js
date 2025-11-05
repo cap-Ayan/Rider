@@ -6,6 +6,7 @@ const captainRouter = express.Router();
 const { register } = require('../controllers/captainController.js');
 const{login}=require('../controllers/captainController.js');
 const{logout}=require('../controllers/captainController.js');
+const{getCaptain}=require('../controllers/captainController.js');
 
 
 captainRouter.post('/register', [
@@ -26,6 +27,8 @@ captainRouter.post('/login',[
 
 
 captainRouter.get('/logout',logout);
+
+captainRouter.get('/profile',protect,getCaptain);
 
 
 

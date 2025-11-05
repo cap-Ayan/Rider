@@ -84,3 +84,8 @@ exports.logout = (req, res) => {
     res.clearCookie('captoken');
     res.status(200).json({ success:true, message: 'Captain logged out successfully' });
 }
+
+exports.getCaptain = async (req, res) => {
+    const captain = req.cap;
+    res.status(200).json({ success:true, captain });
+}

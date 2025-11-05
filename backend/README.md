@@ -350,7 +350,65 @@ Responses
   ```
 - 500 Internal Server Error — Unexpected error while clearing cookie.
 
-General notes
-- Add middleware early: `app.use(express.json()); app.use(express.urlencoded({ extended: true })); app.use(cookieParser());`
-- For production set cookie options: `secure: true` (HTTPS), `sameSite` as needed, and appropriate `maxAge`.
-- Use a persistent DB connection before handling requests (see `connectDB()` in app).
+## GET /api/captain/profile
+
+Description
+- Retrieve the authenticated captain's profile. Route is protected by capAuth middleware which reads a JWT from an HTTP-only cookie named `captoken`.
+
+Required headers / cookies
+- Cookie: `captoken=<JWT>` (sent automatically by browser if cookie is set)
+- For curl testing: `-H "Cookie: captoken=<JWT>"` or use a cookie jar (`-b cookies.txt`)
+
+Authentication
+- capAuth verifies the JWT with `process.env.JWT_SECRET` and loads the captain into `req.cap`.
+- Ensure `cookie-parser` is registered: `app.use(cookieParser());`
+
+Example requests (curl)
+```bash
+# using a raw token
+curl -X GET http://localhost:3000/api/captain/profile \
+  -H "Cookie: captoken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# using cookie jar saved from login
+curl -c cookies.txt -X POST http://localhost:3000/api/captain/login -H "Content-Type: application/json" -d '{"email":"bob@example.com","password":"secret123"}'
+curl -b cookies.txt -X GET http://localhost:3000/api/captain/profile
+```
+
+Responses
+
+- 200 OK  
+  Description: Authenticated — returns the captain object loaded by middleware.
+  Example:
+  ```json
+  {
+    "success": true,
+    "captain": {
+      "_id": "64a1f3...",
+      "name": "Bob",
+      "email": "bob@example.com",
+      "vehicle": { "plate":"ABC123","capacity":4,"type":"car" },
+      "status": "available",
+      "socketId": null,
+      "location": { "lat": 12.34, "lng": 56.78 }
+    }
+  }
+  ```
+
+- 401 Unauthorized  
+  Description: No token provided or token invalid/expired.
+  Example:
+  ```json
+  { "success": false, "message": "Unauthorized" }
+  ```
+
+- 500 Internal Server Error  
+  Description: Unexpected server error while verifying token or fetching the captain.
+  Example:
+  ```json
+  { "success": false, "message": "Internal server error" }
+  ```
+
+Notes / Troubleshooting
+- capAuth reads `req.cookies.captoken` — ensure `cookie-parser` is used and cookies are present.
+- Verify `process.env.JWT_SECRET` matches the secret used when signing tokens.
+- For production set cookie options: `secure: true`, appropriate `sameSite`, and `maxAge`.
