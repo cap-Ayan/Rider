@@ -241,3 +241,116 @@ Responses
 
 Notes
 - The endpoint clears only the HTTP-only cookie on the server; remove any client-side auth state as needed.
+
+## Captain API — Register / Login / Logout
+
+Base path: /api/captain
+
+### POST /api/captain/register
+
+Description
+- Register a new captain. On success the server creates a captain record, signs a JWT and sets it as an HTTP-only cookie named `captoken`.
+
+Required headers
+- `Content-Type: application/json`
+
+Request body (JSON)
+- `name` (string) — required, minimum 3 characters
+- `email` (string) — required, valid email
+- `password` (string) — required, minimum 6 characters
+- `vehicle` (object) — required:
+  - `plate` (string) — required, minimum 3 characters
+  - `capacity` (number) — required, minimum 1
+  - `type` (string) — required, one of `car`, `bike`, `auto`
+
+Validation rules (express-validator)
+- `body('name').notEmpty()`
+- `body('email').isEmail()`
+- `body('password').isLength({ min: 6 })`
+- `body('vehicle.plate').notEmpty()`
+- `body('vehicle.capacity').isInt({ min: 1 })`
+- `body('vehicle.type').isIn(['car','bike','auto'])`
+
+Example request (curl)
+```bash
+curl -X POST http://localhost:3000/api/captain/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"Bob",
+    "email":"bob@example.com",
+    "password":"secret123",
+    "vehicle": { "plate":"ABC123", "capacity":4, "type":"car" }
+  }'
+```
+
+Responses
+- 201 Created — Captain created, sets `captoken` cookie.
+  ```json
+  { "success": true, "message": "Captain registered successfully", "captain": { "_id":"...", "name":"Bob", "email":"bob@example.com", "vehicle": { "plate":"ABC123", "capacity":4, "type":"car" } } }
+  ```
+- 400 Bad Request — Validation failed or captain already exists.
+  ```json
+  { "errors": [ /* validation errors */ ] }
+  ```
+- 500 Internal Server Error — Unexpected error.
+
+Notes
+- Cookie name: `captoken` (HTTP-only). Ensure cookie-parser is used.
+- JWT secret must be set in `process.env.JWT_SECRET`.
+
+### POST /api/captain/login
+
+Description
+- Authenticate a captain. On success signs a JWT and sets `captoken` HTTP-only cookie.
+
+Required headers
+- `Content-Type: application/json`
+
+Request body (JSON)
+- `email` (string) — required
+- `password` (string) — required
+
+Example request (curl)
+```bash
+curl -X POST http://localhost:3000/api/captain/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"bob@example.com","password":"secret123"}'
+```
+
+Responses
+- 200 OK — Credentials valid, sets `captoken` cookie.
+  ```json
+  { "success": true, "message": "Captain logged in successfully", "captain": { "_id":"...", "name":"Bob", "email":"bob@example.com" } }
+  ```
+- 400 Bad Request — Validation failed or invalid credentials.
+  ```json
+  { "message": "Invalid credentials" }
+  ```
+- 500 Internal Server Error — Unexpected error.
+
+Notes
+- The server returns the captain object but password is excluded from responses by model configuration (`select: false`).
+
+### GET /api/captain/logout
+
+Description
+- Log out the captain by clearing the `captoken` HTTP-only cookie.
+
+Example request (curl)
+```bash
+curl -X GET http://localhost:3000/api/captain/logout -b "captoken=<JWT>"
+# or after login using cookie jar:
+curl -b cookies.txt -X GET http://localhost:3000/api/captain/logout
+```
+
+Responses
+- 200 OK — Cookie cleared.
+  ```json
+  { "success": true, "message": "Captain logged out successfully" }
+  ```
+- 500 Internal Server Error — Unexpected error while clearing cookie.
+
+General notes
+- Add middleware early: `app.use(express.json()); app.use(express.urlencoded({ extended: true })); app.use(cookieParser());`
+- For production set cookie options: `secure: true` (HTTPS), `sameSite` as needed, and appropriate `maxAge`.
+- Use a persistent DB connection before handling requests (see `connectDB()` in app).
