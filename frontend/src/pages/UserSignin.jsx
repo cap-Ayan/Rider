@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const UserSignin = () => {
   const [name, setName] = useState('');
@@ -7,6 +9,8 @@ const UserSignin = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   // inject Google font once
   useEffect(() => {
@@ -37,15 +41,27 @@ const UserSignin = () => {
     }
 
     // TODO: call register API (example below)
-    // fetch('/api/users/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ name, email, password })
-    // }).then(...)
+    fetch('http://localhost:3000/api/users/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    }).then((res) => {
+      if (res.ok) {
+        navigate('/home');
+        setError(null);
+        setName('');
+        setEmail('');
+        setPassword('');
+        setConfirm('');
+      } else {
+        setError('Failed to create account.');
+      }
+    }).catch(() => {
+      toast.error('Network error. Please try again later.');
+    });
 
-    console.log('sign up', { name, email, password });
-  };
-
+   toast.success('Account created successfully!');
+  }
   const styles = {
     page: {
       minHeight: '100vh',
@@ -209,5 +225,6 @@ const UserSignin = () => {
     </div>
   );
 };
+
 
 export default UserSignin;

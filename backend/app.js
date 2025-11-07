@@ -3,18 +3,26 @@ const connectDB = require('./config/dbConnect.js');
 const userRouter = require('./routes/userRouter.js');
 const captainRouter = require('./routes/captainRouter.js');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 dotenv.config()
-const cors = require('cors')
 
 const express= require('express')
 
 connectDB();
 
 const app = express()
-
-app.use(cors())
 app.use(cookieParser());
+const corsOptions = {
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 
 app.get('/',(req,res)=>{
     res.send("hello world")

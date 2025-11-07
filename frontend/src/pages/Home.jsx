@@ -1,27 +1,59 @@
-import React from 'react'
-import 'remixicon/fonts/remixicon.css'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let mounted = true;
+    const checkProfile = async () => {
+      try {
+        const res = await fetch('/api/users/profile', { // <-- changed to relative path
+          method: 'GET',
+          credentials: 'include', // keep this so cookies are sent/stored
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!mounted) return;
+
+        console.log('Profile fetch status:', res.status, res.statusText);
+        const text = await res.text();
+        console.log('Profile raw response text:', text);
+
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch (err) {
+          console.error('Profile JSON parse error:', err);
+        }
+
+        console.log('Profile parsed data:', data);
+
+        if (res.ok && data.user) {
+          setUser(data.user);
+          setLoading(false);
+        } else {
+          console.warn('Profile not valid -> redirect to login');
+          navigate('/user/login', { replace: true });
+        }
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+        navigate('/user/login', { replace: true });
+      }
+    };
+
+    checkProfile();
+    return () => { mounted = false; };
+  }, [navigate]);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <>
-    <div className={`
-        h-screen w-screen flex flex-col justify-between pt-8 
-        bg-bottom  bg-no-repeat
-        bg-[url('https://plus.unsplash.com/premium_photo-1736435070040-c98215ce275e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=715')]
-        md:bg-[url('https://plus.unsplash.com/premium_photo-1663951252600-2fd5c60749c4?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE4OXx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=60&w=600')]
-        bg-cover
-    `}>
-        <h1 className='text-black text-4xl font-semibold ml-8'>Rider</h1>
-        <div className='py-5 px-5 bg-white pb-7 '>
-            <h2 className='text-2xl font-bold text-black'>Get Started With Rider</h2>
-            <button className='w-full bg-black text-white py-3 rounded  font-medium text-xl mt-5 relative'onClick={()=>navigate('/user/login')}>Continue <i className="ri-arrow-right-line absolute right-5 top-1/2 -translate-y-1/2"></i></button>
-        </div>
+    <div>
+      <h1>Home</h1>
+      <p>Welcome{user?.name ? `, ${user.name}` : ''}.</p>
     </div>
-    </>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

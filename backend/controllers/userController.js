@@ -28,7 +28,15 @@ exports.register = async (req, res) => {
         await user.save();
         
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-        res.cookie('token', token, { httpOnly: true });
+        res.cookie('token', token, {
+            httpOnly: true,
+            // In production you want SameSite=None and secure=true so cross-site cookies work over HTTPS
+            // For local dev (http) set sameSite:'lax' (or omit) and secure:false, but cross-site POSTs may be blocked.
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+       
 
         res.status(201).json({success:true, message: 'User registered successfully', user});
     } catch (error) {
@@ -58,7 +66,15 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-        res.cookie('token', token, { httpOnly: true });
+        res.cookie('token', token, {
+            httpOnly: true,
+            // In production you want SameSite=None and secure=true so cross-site cookies work over HTTPS
+            // For local dev (http) set sameSite:'lax' (or omit) and secure:false, but cross-site POSTs may be blocked.
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+        
 
         res.status(200).json({ success: true, message: 'User logged in successfully', user });
     } catch (error) {
@@ -68,12 +84,18 @@ exports.login = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
     try {
+        console.log('getProfile: req.user ->', !!req.user, req.user && req.user._id);
         const user = req.user;
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        res.status(200).json({ success: true, user });
+        // convert to POJO and remove password if present
+        const safeUser = user.toObject ? user.toObject() : { ...user };
+        if (safeUser.password) delete safeUser.password;
+        console.log('getProfile: sending user ->', { id: safeUser._id, email: safeUser.email });
+        res.status(200).json({ success: true, user: safeUser });
     } catch (error) {
+        console.error('getProfile error:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 }

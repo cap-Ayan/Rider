@@ -15,6 +15,7 @@
     "react-dom": "^19.1.1",
     "react-error-boundary": "^6.0.0",
     "react-router-dom": "^7.9.5",
+    "react-toastify": "^11.0.5",
     "remixicon": "^4.7.0"
   },
   "devDependencies": {

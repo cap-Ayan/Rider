@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const UserLogin = () => {
   const [email, setEmail] = useState('');
@@ -17,10 +18,47 @@ const UserLogin = () => {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // placeholder - wire this to your login API
-    console.log('login attempt', { email, password });
+
+    if (!email.trim() || !password) {
+      toast.error('All fields are required.');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/users/login', { // <-- relative path for proxy
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // keep cookies enabled
+        body: JSON.stringify({ email, password }),
+      });
+
+      // try parse JSON response; fall back to empty object if parsing fails
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        toast.success(data.message || 'Logged in successfully!');
+        setEmail('');
+        setPassword('');
+        navigate('/home');
+      } else {
+        const message =
+          data.message ||
+          (data.errors && Array.isArray(data.errors) ? data.errors.map((e) => e.msg).join(', ') : null) ||
+          'Failed to log in.';
+        toast.error(message);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error('Network error. Please try again later.');
+    }
   };
 
   const styles = {

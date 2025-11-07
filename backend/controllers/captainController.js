@@ -39,7 +39,7 @@ exports.register = async (req, res) => {
 
         // Generate JWT
         const token = jwt.sign({ id: captain._id }, process.env.JWT_SECRET, { expiresIn: '10h' });
-        res.cookie('captoken', token, { httpOnly: true });
+        res.cookie('captoken', token);
 
         res.status(201).json({ success:true, message: 'Captain registered successfully', captain });
     } catch (error) {
@@ -71,7 +71,7 @@ exports.login = async (req, res) => {
 
         // Generate JWT 
         const token = jwt.sign({ id: captain._id }, process.env.JWT_SECRET, { expiresIn: '10h' });
-        res.cookie('captoken', token, { httpOnly: true });
+        res.cookie('captoken', token);
 
         res.status(200).json({ success:true, message: 'Captain logged in successfully', captain });
     } catch (error) {

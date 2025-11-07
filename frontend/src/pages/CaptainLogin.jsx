@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const CaptainLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   // inject Google font once
   useEffect(() => {
@@ -17,10 +19,43 @@ const CaptainLogin = () => {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // placeholder - wire this to your login API
-    console.log('login attempt', { email, password });
+
+    if (!email.trim() || !password) {
+      toast.error('All fields are required.');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/captain/login', { // relative (proxy)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // important so server Set-Cookie is accepted
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        toast.success(data.message || 'Logged in successfully');
+        setEmail('');
+        setPassword('');
+        navigate('/home');
+      } else {
+        const message =
+          data.message ||
+          (data.errors && Array.isArray(data.errors) ? data.errors.map((e) => e.msg).join(', ') : 'Login failed');
+        toast.error(message);
+      }
+    } catch (err) {
+      console.error('Captain login error:', err);
+      toast.error('Network error. Please try again later.');
+    }
   };
 
   const styles = {
@@ -98,7 +133,6 @@ const CaptainLogin = () => {
 
   return (
     <div style={styles.page}>
-     
       <main style={styles.card} aria-labelledby="login-heading">
          <h2 className='text-4xl font-bold mb-10'>Rider</h2>
         <h1 id="login-heading" style={styles.title}>Log in as a Captain</h1>

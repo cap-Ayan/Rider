@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const CaptainSignin = () => {
   const [name, setName] = useState('');
@@ -12,39 +13,28 @@ const CaptainSignin = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const id = 'captainsignin-google-font';
-    if (!document.getElementById(id)) {
-      const link = document.createElement('link');
-      link.id = id;
-      link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap';
-      document.head.appendChild(link);
-    }
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     if (!name.trim() || !email.trim() || !password) {
-      setError('All fields are required.');
+      toast.error('All fields are required.');
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      toast.error('Password must be at least 6 characters.');
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      toast.error('Passwords do not match.');
       return;
     }
     if (!plate.trim()) {
-      setError('Vehicle plate is required.');
+      toast.error('Vehicle plate is required.');
       return;
     }
-    if (capacity < 1) {
-      setError('Vehicle capacity must be at least 1.');
+    if (Number(capacity) < 1) {
+      toast.error('Vehicle capacity must be at least 1.');
       return;
     }
 
@@ -52,7 +42,7 @@ const CaptainSignin = () => {
       const payload = {
         name,
         email,
-        password, // backend should hash before saving
+        password, // backend hashes before saving
         vehicle: {
           plate,
           capacity: Number(capacity),
@@ -60,23 +50,30 @@ const CaptainSignin = () => {
         },
       };
 
-      const res = await fetch('/api/captain/register', {
+      const res = await fetch('/api/captain/register', { // relative (proxy)
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // include cookies so captoken can be set
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setError(data.message || (data.errors && data.errors.map(e=>e.msg).join(', ')) || 'Registration failed');
+        const message =
+          data.message ||
+          (data.errors && Array.isArray(data.errors) ? data.errors.map((e) => e.msg).join(', ') : 'Registration failed');
+        toast.error(message);
+        setError(message);
         return;
       }
 
-      // on success, navigate to captain login or profile
+      toast.success(data.message || 'Captain registered successfully');
       navigate('/captain/login');
     } catch (err) {
+      console.error('Captain register error:', err);
+      toast.error('Network error. Please try again.');
       setError('Network error. Please try again.');
-      console.error(err);
     }
   };
 
