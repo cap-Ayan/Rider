@@ -32,8 +32,8 @@ exports.register = async (req, res) => {
             httpOnly: true,
             // In production you want SameSite=None and secure=true so cross-site cookies work over HTTPS
             // For local dev (http) set sameSite:'lax' (or omit) and secure:false, but cross-site POSTs may be blocked.
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            secure: process.env.NODE_ENV === 'production',
+            sameSite:'none',
+            secure: true,
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
        
@@ -70,8 +70,8 @@ exports.login = async (req, res) => {
             httpOnly: true,
             // In production you want SameSite=None and secure=true so cross-site cookies work over HTTPS
             // For local dev (http) set sameSite:'lax' (or omit) and secure:false, but cross-site POSTs may be blocked.
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            secure: process.env.NODE_ENV === 'production',
+            sameSite:'none',
+            secure: true,
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
         

@@ -1,6 +1,6 @@
 const express = require('express');
 const{body}=require('express-validator');
-const protect = require('../middlewares/capAuth.js');
+const capAuth = require('../middlewares/capAuth.js');
 
 const captainRouter = express.Router();
 const { register } = require('../controllers/captainController.js');
@@ -28,7 +28,7 @@ captainRouter.post('/login',[
 
 captainRouter.get('/logout',logout);
 
-captainRouter.get('/profile',protect,getCaptain);
+captainRouter.get('/profile',capAuth,getCaptain);
 
 
 

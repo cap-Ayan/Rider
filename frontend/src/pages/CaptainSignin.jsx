@@ -69,7 +69,7 @@ const CaptainSignin = () => {
       }
 
       toast.success(data.message || 'Captain registered successfully');
-      navigate('/captain/login');
+      navigate('/caphome');
     } catch (err) {
       console.error('Captain register error:', err);
       toast.error('Network error. Please try again.');

@@ -17,17 +17,7 @@ const Home = () => {
         });
 
         if (!mounted) return;
-
-        console.log('Profile fetch status:', res.status, res.statusText);
-        const text = await res.text();
-        console.log('Profile raw response text:', text);
-
-        let data = {};
-        try { data = text ? JSON.parse(text) : {}; } catch (err) {
-          console.error('Profile JSON parse error:', err);
-        }
-
-        console.log('Profile parsed data:', data);
+        const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.user) {
           setUser(data.user);
@@ -46,12 +36,20 @@ const Home = () => {
     return () => { mounted = false; };
   }, [navigate]);
 
-  if (loading) return <div>Loading...</div>;
+  
 
   return (
-    <div>
-      <h1>Home</h1>
-      <p>Welcome{user?.name ? `, ${user.name}` : ''}.</p>
+    <div className='bg-white h-screen relative'>
+      <h1 className='px-4 py-4 text-black text-4xl font-light absolute z-10'>Rider</h1>
+      <img src="https://imgs.search.brave.com/VbVNc__OwWH1SNkV6W-AaKhk06LGmObAy49QtAC9JxY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5tYXB0aWxlci5j/b20vaW1nL1N0cmVl/dHNfVGh1bWJuYWls/XzYzZDg1Y2Y5NTMu/d2VicA" alt="" className='relative w-full h-full object-cover' />
+      <div className='px-7 absolute bg-white/90 bottom-0 top-0 left-0 h-fit w-full py-10'>
+        <h2 className='text-3xl font-medium text-gray-700 my-5'>Find a Ride</h2>
+        <form className='flex flex-col gap-4'>
+          <input type="text" placeholder='Pickup Location' className='border border-gray-300 p-2 rounded placeholder:text-gray-400 outline-none text-gray-800' />
+          <input type="text" placeholder='Dropoff Location' className='border border-gray-300 p-2 rounded placeholder:text-gray-400 outline-none text-gray-800' />
+          <button type="submit" className='bg-black/90 text-white p-2 rounded font-semibold'>Search</button>
+        </form>
+      </div>
     </div>
   );
 };

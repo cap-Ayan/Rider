@@ -38,8 +38,15 @@ exports.register = async (req, res) => {
         await captain.save();
 
         // Generate JWT
-        const token = jwt.sign({ id: captain._id }, process.env.JWT_SECRET, { expiresIn: '10h' });
-        res.cookie('captoken', token);
+        const token = jwt.sign({ id: captain._id }, process.env.JWT_SECRET);
+        res.cookie('captoken', token,{
+            httpOnly: true,
+            // In production you want SameSite=None and secure=true so cross-site cookies work over HTTPS
+            // For local dev (http) set sameSite:'lax' (or omit) and secure:false, but cross-site POSTs may be blocked.
+            sameSite:'none',
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
 
         res.status(201).json({ success:true, message: 'Captain registered successfully', captain });
     } catch (error) {
@@ -70,8 +77,15 @@ exports.login = async (req, res) => {
         }
 
         // Generate JWT 
-        const token = jwt.sign({ id: captain._id }, process.env.JWT_SECRET, { expiresIn: '10h' });
-        res.cookie('captoken', token);
+        const token = jwt.sign({ id: captain._id }, process.env.JWT_SECRET);
+        res.cookie('captoken', token,{
+            httpOnly: true,
+            // In production you want SameSite=None and secure=true so cross-site cookies work over HTTPS
+            // For local dev (http) set sameSite:'lax' (or omit) and secure:false, but cross-site POSTs may be blocked.
+            sameSite:'none',
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
 
         res.status(200).json({ success:true, message: 'Captain logged in successfully', captain });
     } catch (error) {

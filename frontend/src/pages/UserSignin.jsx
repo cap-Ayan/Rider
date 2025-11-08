@@ -44,6 +44,7 @@ const UserSignin = () => {
     fetch('http://localhost:3000/api/users/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials:'include',
       body: JSON.stringify({ name, email, password })
     }).then((res) => {
       if (res.ok) {

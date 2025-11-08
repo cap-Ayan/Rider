@@ -7,6 +7,8 @@ import CaptainLogin from './pages/CaptainLogin'
 import CaptainSignin from './pages/CaptainSignin'
 import { ErrorBoundary } from 'react-error-boundary'
 import Home from './pages/Home'
+import CapHome from './pages/CapHome'
+
 
 // add react-toastify imports
 import { ToastContainer } from 'react-toastify'
@@ -33,6 +35,7 @@ const App = () => {
           <Route path='/captain/login' element={<CaptainLogin/>}/>
           <Route path='/captain/signin' element={<CaptainSignin/>}/>
           <Route path='/home' element={<Home/>}/>
+          <Route path='/caphome' element={<CapHome/>}/>
         </Routes>
 
         {/* Toast container - available app-wide */}

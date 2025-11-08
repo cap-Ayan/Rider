@@ -17,7 +17,7 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    console.log('protect: decoded token ->', decoded);
+   
 
     // find user and exclude password
     const user = await userModel.findById(decoded._id || decoded.id).select('-password');
@@ -28,7 +28,7 @@ const protect = async (req, res, next) => {
 
     req.user = user;
     // log minimal user info for debugging
-    console.log('protect: loaded user ->', { id: user._id, email: user.email, name: user.name });
+    
 
     next();
   } catch (error) {

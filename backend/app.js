@@ -13,16 +13,11 @@ connectDB();
 
 const app = express()
 app.use(cookieParser());
-const corsOptions = {
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
-};
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+}));
 
 app.get('/',(req,res)=>{
     res.send("hello world")

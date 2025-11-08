@@ -45,7 +45,7 @@ const CaptainLogin = () => {
         toast.success(data.message || 'Logged in successfully');
         setEmail('');
         setPassword('');
-        navigate('/home');
+        navigate('/caphome');
       } else {
         const message =
           data.message ||
