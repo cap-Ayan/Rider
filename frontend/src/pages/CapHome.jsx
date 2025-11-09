@@ -43,6 +43,7 @@ const CapHome = () => {
     <div>
       <h1>Home</h1>
       <p>Welcome{user?.name ? `, ${user.name}` : ''}.</p>
+      <p>The vehicle plate is {user?.vehicle?.plate || 'unknown'}.</p>
     </div>
   );
 };

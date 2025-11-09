@@ -35,6 +35,7 @@ const CaptainSignin = () => {
     }
     if (Number(capacity) < 1) {
       toast.error('Vehicle capacity must be at least 1.');
+      
       return;
     }
 
